@@ -9,6 +9,7 @@ namespace BejeweledGazeus
     {
         public Type type;
         public Vector2 position;
+        public Fruit fruit;
 
         public Slot(Vector2 position, Type type = Type.Blank)
         {

@@ -17,7 +17,7 @@ namespace BejeweledGazeus
         public Slot.Group[] grid;
 
 
-        private static Vector2[] _directions =
+        static Vector2[] _directions =
         {
             Vector2.up,
             Vector2.left,
@@ -55,6 +55,42 @@ namespace BejeweledGazeus
             SpawnFruits();
         }
 
+        //Cast a position in grid (Vector2) to a position in the world (Vector3)
+        public static Vector3 GridToWorldPosition(Vector2 gridPosition)
+        {
+            return new Vector3(-2f + gridPosition.x, 7f - gridPosition.y);
+        }
+
+        //Swap a slot for another one and move the fruits to its new position
+        public void SwapFruits(Fruit a, Fruit b)
+        {
+            var slotB = new Slot(b.slot.position, b.slot.type);
+            slotB.fruit = b;
+            var slotA = new Slot(a.slot.position, a.slot.type);
+            slotA.fruit = a;
+            
+            b.slot = slotA;
+            a.slot = slotB;
+
+            grid[(int)a.slot.position.x].slots[(int)a.slot.position.y] = slotA;
+            grid[(int)b.slot.position.x].slots[(int)b.slot.position.y] = slotB;
+
+            a.GoToGridPosition();
+            b.GoToGridPosition();
+        }
+
+        //Get a slot in given position
+        public Slot GetSlot(Vector2 position)
+        {
+            if (position.x < 0f || grid.Length <= position.x)
+                return new Slot(position);
+
+            var line = grid[(int)position.x];
+            var slot = line.slots.Length > position.y && position.y > -1f ? line.slots[(int)position.y] : new Slot(position);
+            
+            return slot;
+        }
+
         //Initialize the grid with random fruits
         void SetupGrid()
         {
@@ -69,7 +105,8 @@ namespace BejeweledGazeus
                 {
                     int randomIndex = Random.Range(0, fruitsTemplates.Length);
                     //We need to add +1 because 0 = blank
-                    grid[i].slots[j].type = (Slot.Type) (randomIndex + 1);  
+                    grid[i].slots[j].type = (Slot.Type) (randomIndex + 1);
+                    grid[i].slots[j].position = new Vector2(i, j);
                 }
             }
         }
@@ -86,7 +123,7 @@ namespace BejeweledGazeus
                     GameObject template = fruitsTemplates[(int) (type - 1)];
 
                     GameObject fruit = Instantiate(template, gridParent.transform);
-
+                    fruit.GetComponent<Fruit>().SetSlot(grid[i].slots[j]);
                     fruit.transform.localPosition = new Vector3(-2f + i, 7f - j);
                 }
             }
@@ -216,19 +253,17 @@ namespace BejeweledGazeus
         {
             if (position.x < 0 || position.x >= width || position.y < 0 || position.y >= height)
                 return 0;
+
             return grid[(int)position.x].slots[(int)position.y].type;
         }
 
-        //Get a slot in given position
-        Slot GetSlot(Vector2 position)
-        {
-            return new Slot(position, GetType(position));
-        }
+        
 
         //Filter a slot group removing the duplicates
         void RemoveDuplicates(ref Slot.Group group)
         {
             List<Slot> listSlots = new List<Slot>(group.slots);
+            List<Slot> filtered = new List<Slot>();
 
             for(int i = 0; i < listSlots.Count; i++)
             {
@@ -236,14 +271,14 @@ namespace BejeweledGazeus
                 {
                     var slot = listSlots[j];
 
-                    if(slot == listSlots[i] && i != j)
+                    if(slot != listSlots[i] || i == j)
                     {
-                        listSlots.RemoveAt(j);
+                        filtered.Add(listSlots[j]);
                     }
                 }
             }
 
-            group.slots = listSlots.ToArray();
+            group.slots = filtered.ToArray();
         }
 
         //Return true if a slot is found. It searches by the slot position and not the object reference (which can be different)
