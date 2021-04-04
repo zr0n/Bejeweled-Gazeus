@@ -7,14 +7,29 @@ namespace BejeweledGazeus
     [System.Serializable]
     public class Slot
     {
-        public Type type;
+        public Type type {
+            get
+            {
+                return _type;
+            }
+            set
+            {
+                if(value != Slot.Type.Blank && fruit && fruit.type != value)
+                    Debug.Log("Old Type: " + _type + " New Type: " + value);
+                _type = value;
+            }
+        }
         public Vector2 position;
         public Fruit fruit;
 
-        public Slot(Vector2 position, Type type = Type.Blank)
+
+        public Type _type;
+
+        public Slot(Vector2 position, Type type = Type.Blank, Fruit fruit = null)
         {
             this.position = position;
             this.type = type;
+            this.fruit = fruit;
         }
 
 

@@ -18,8 +18,26 @@ namespace BejeweledGazeus
         [HideInInspector]
         public Vector2 newGridPosition;
 
-        [HideInInspector]
+        //[HideInInspector]
+        //public Slot slot
+        //{
+        //    get
+        //    {
+        //        foreach(var line in GameController.instance.grid)
+        //        {
+        //            foreach(var slot in line.slots)
+        //            {
+        //                if (slot.fruit == this)
+        //                    return slot;
+        //            }
+        //        }
+
+        //        return null;
+        //    }
+        //}
         public Slot slot;
+
+        public Slot.Type type;
 
         bool _movingByMouseOrTouch;
         Vector2 _desiredPosition;
@@ -109,6 +127,7 @@ namespace BejeweledGazeus
         //Move the fruit to where it belongs in grid
         public void GoToGridPosition()
         {
+            Debug.Log("Slot: " + slot.position);
             _movingTo = GameController.GridToWorldPosition(slot.position);
             _shouldMove = true;
         }

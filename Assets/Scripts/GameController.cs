@@ -68,16 +68,14 @@ namespace BejeweledGazeus
         //Swap a slot for another one and move the fruits to its new position
         public void SwapFruits(Fruit a, Fruit b)
         {
-            var slotB = new Slot(b.slot.position, b.slot.type);
-            slotB.fruit = b;
-            var slotA = new Slot(a.slot.position, a.slot.type);
-            slotA.fruit = a;
+            var slotB = new Slot(b.slot.position, b.type, b);
+            var slotA = new Slot(a.slot.position, a.type, a);
             
-            b.slot = slotA;
-            a.slot = slotB;
+            grid[(int)slotB.position.x].slots[(int)slotB.position.y] = a.slot;
+            grid[(int)slotA.position.x].slots[(int)slotA.position.y] = b.slot;
 
-            grid[(int)a.slot.position.x].slots[(int)a.slot.position.y] = slotA;
-            grid[(int)b.slot.position.x].slots[(int)b.slot.position.y] = slotB;
+            a.slot = new Slot(slotB.position, slotA.type, slotA.fruit);
+            b.slot = new Slot(slotA.position, slotB.type, slotB.fruit);
 
             a.GoToGridPosition();
             b.GoToGridPosition();
@@ -100,8 +98,9 @@ namespace BejeweledGazeus
         //Search for matching neighbours and delete them
         public void CheckConnectedNeighbours()
         {
-            List<Slot> delete;
+            List<Slot> delete = new List<Slot>();
             bool matchedAtLeastThree = false;
+
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
@@ -115,19 +114,28 @@ namespace BejeweledGazeus
 
                     while (GetConnectedNeighbours(position).slots.Length > 0)
                     {
-                        Slot slot = GetSlot(position);
-
-                        if (!ContainsSlot(delete, slot))
+                        var connectedSlots = GetConnectedNeighbours(position).slots;
+                        foreach(var s in connectedSlots)
                         {
-                            delete.Add(slot);
-                            matchedAtLeastThree = true;
+                            delete.Add(s);
                         }
+                        matchedAtLeastThree = true;
 
                         SetTypeAt(position, GetNewFruitType(delete));
+
+                        Slot slot = GetSlot(position);
+                        //check callstack setter
+                    }
+
+                    foreach (var slot in delete)
+                    {
+                        if (slot.fruit)
+                            Destroy(slot.fruit.gameObject);
                     }
                 }
             }
 
+            //didn't make score, then back to fruits original position
             if (!matchedAtLeastThree && swap.Length > 0)
             {
                 SwapFruits(swap[0], swap[1]);
@@ -166,8 +174,11 @@ namespace BejeweledGazeus
 
                     GameObject template = fruitsTemplates[(int) (type - 1)];
 
-                    GameObject fruit = Instantiate(template, gridParent.transform);
-                    fruit.GetComponent<Fruit>().SetSlot(grid[i].slots[j]);
+                    GameObject fruitObject = Instantiate(template, gridParent.transform);
+                    
+                    Fruit fruit = fruitObject.GetComponent<Fruit>();
+                    fruit.SetSlot(grid[i].slots[j]);
+                    fruit.type = type;
                     fruit.transform.localPosition = new Vector3(-2f + i, 7f - j);
                 }
             }
@@ -181,7 +192,7 @@ namespace BejeweledGazeus
             Slot.Group neighbours = new Slot.Group();
             Slot.Type type = GetType(position);
 
-
+            
             //Check if node is in middle of at least two other nodes of the same type
             List<List<Slot>> checkMiddle = new List<List<Slot>>
             {
@@ -272,6 +283,18 @@ namespace BejeweledGazeus
             return GetSlot(position).type;
         }
 
+        //Push fruits to the neighbour down slot if it's empty
+        void PushFruitsDown()
+        {
+            for(int i = 0; i < width; i++)
+            {
+                for(int j = 0; j < height; j++)
+                {
+
+                }
+            }
+        }
+
         
 
         //Filter a slot group removing the duplicates
@@ -296,19 +319,19 @@ namespace BejeweledGazeus
             group.slots = filtered.ToArray();
         }
 
-        //Return true if a slot is found. It searches by the slot position and not the object reference (which can be different)
-        bool ContainsSlot(List<Slot> list, Slot slot)
-        {
-            foreach(var s in list)
-            {
-                if((s.position - slot.position).magnitude < .1f) //are the same spot?
-                {
-                    return true;
-                }
-            }
+        ////Return true if a slot is found. It searches by the slot position and not the object reference (which can be different)
+        //bool ContainsSlot(List<Slot> list, Slot slot)
+        //{
+        //    foreach(var s in list)
+        //    {
+        //        if((s.position - slot.position).magnitude < .1f) //are the same spot?
+        //        {
+        //            return true;
+        //        }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
 
         Slot.Type GetNewFruitType(List<Slot> delete)
@@ -330,6 +353,7 @@ namespace BejeweledGazeus
 
         void SetTypeAt(Vector2 position, Slot.Type fruitType)
         {
+            Debug.Log(GetSlot(position).fruit ? "name: " + GetSlot(position).fruit.name + " position: " + position : "");
             grid[(int)position.x].slots[(int)position.y].type = fruitType;
         }
     }
