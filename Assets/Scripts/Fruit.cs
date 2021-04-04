@@ -55,7 +55,12 @@ namespace BejeweledGazeus
                 SmoothMoveTo(_movingTo);
 
                 if (Vector3.Distance(transform.localPosition, _movingTo) < .01f)
+                {
                     _shouldMove = false;
+
+                    if (GameController.instance.swap.Length > 0 && GameController.instance.swap[0] == this)
+                        GameController.instance.CheckConnectedNeighbours();
+                }
             }
         }
 
@@ -138,7 +143,6 @@ namespace BejeweledGazeus
 
         void CheckSwap()
         {
-            Debug.Log("New Grid Position: " + newGridPosition + " Slot Position: " + slot.position);
             if (newGridPosition.Equals(slot.position)) return;
 
             Slot otherSlot = GameController.instance.GetSlot(newGridPosition);
