@@ -68,14 +68,15 @@ namespace BejeweledGazeus
         //Swap a slot for another one and move the fruits to its new position
         public void SwapFruits(Fruit a, Fruit b)
         {
-            var slotB = new Slot(b.slot.position, b.type, b);
-            var slotA = new Slot(a.slot.position, a.type, a);
+            var slotB = new Slot(b.slot.position, b.slot.type, b);
+            var slotA = new Slot(a.slot.position, a.slot.type, a);
             
-            grid[(int)slotB.position.x].slots[(int)slotB.position.y] = a.slot;
-            grid[(int)slotA.position.x].slots[(int)slotA.position.y] = b.slot;
 
             a.slot = new Slot(slotB.position, slotA.type, slotA.fruit);
             b.slot = new Slot(slotA.position, slotB.type, slotB.fruit);
+
+            grid[(int)slotB.position.x].slots[(int)slotB.position.y] = a.slot;
+            grid[(int)slotA.position.x].slots[(int)slotA.position.y] = b.slot;
 
             a.GoToGridPosition();
             b.GoToGridPosition();
@@ -130,7 +131,12 @@ namespace BejeweledGazeus
                     foreach (var slot in delete)
                     {
                         if (slot.fruit)
+                        {
                             Destroy(slot.fruit.gameObject);
+                            slot.type = Slot.Type.Blank;
+                            slot.fruit = null;
+                            grid[(int)slot.position.x].slots[(int)slot.position.y] = slot;
+                        }
                     }
                 }
             }
@@ -141,6 +147,8 @@ namespace BejeweledGazeus
                 SwapFruits(swap[0], swap[1]);
                 swap = new Fruit[0];
             }
+            else if(matchedAtLeastThree)
+                PushFruitsDown();
         }
 
         //Initialize the grid with random fruits
@@ -178,7 +186,6 @@ namespace BejeweledGazeus
                     
                     Fruit fruit = fruitObject.GetComponent<Fruit>();
                     fruit.SetSlot(grid[i].slots[j]);
-                    fruit.type = type;
                     fruit.transform.localPosition = new Vector3(-2f + i, 7f - j);
                 }
             }
@@ -288,9 +295,57 @@ namespace BejeweledGazeus
         {
             for(int i = 0; i < width; i++)
             {
-                for(int j = 0; j < height; j++)
+                for(int j = (height - 1); j > -1; j--)
                 {
+                    Vector2 position = new Vector2(i, j);
+                    Slot slot = GetSlot(position);
 
+                    //If it is not an empty space: do nothing
+                    if (slot.type != Slot.Type.Blank) continue;
+
+                    //else move the pieces down;
+                    for(int k = (j - 1); k > -2; k--)
+                    {
+
+                        Vector2 nextPosition = new Vector2(i, k);
+                        Slot nextSlot = GetSlot(nextPosition);
+
+                        if (nextSlot.type == Slot.Type.Blank) continue;
+
+                        if (k >= 0 && k < height)
+                        {
+                            Debug.Log("Moving " + i + "," + k + " " + nextSlot.position + " to " + slot.position);
+                            if(nextSlot.position.x != slot.position.x)
+                            {
+                                Debug.Log(nextSlot.position);
+                            }
+                            slot.fruit = nextSlot.fruit;
+                            slot.type = nextSlot.type;
+                            slot.fruit.SetSlot(slot);
+                            //slot.position = nextSlot.position;
+                            grid[(int)slot.position.x].slots[(int)slot.position.y] = slot;
+
+                            nextSlot.fruit.GoToGridPosition();
+
+                            nextSlot.fruit = null;
+                            nextSlot.type = Slot.Type.Blank;
+
+                            grid[(int)nextSlot.position.x].slots[(int)nextSlot.position.y] = nextSlot;
+                            //slot = nextSlot;
+                            //grid[(int)slot.position.x].slots[(int)slot.position.y] = nextSlot;
+
+                            //nextSlot.type = Slot.Type.Blank;
+                            /*
+                            int randomIndex = Random.Range(0, fruitsTemplates.Length);
+                            Fruit newFruit = Instantiate(fruitsTemplates[randomIndex], gridParent.transform).GetComponent<Fruit>();
+                            */
+                        }
+                        else
+                        {
+                            //instantiate new fruits
+                        }
+                        break;
+                    }
                 }
             }
         }
@@ -353,7 +408,6 @@ namespace BejeweledGazeus
 
         void SetTypeAt(Vector2 position, Slot.Type fruitType)
         {
-            Debug.Log(GetSlot(position).fruit ? "name: " + GetSlot(position).fruit.name + " position: " + position : "");
             grid[(int)position.x].slots[(int)position.y].type = fruitType;
         }
     }

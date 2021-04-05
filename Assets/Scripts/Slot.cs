@@ -14,8 +14,6 @@ namespace BejeweledGazeus
             }
             set
             {
-                if(value != Slot.Type.Blank && fruit && fruit.type != value)
-                    Debug.Log("Old Type: " + _type + " New Type: " + value);
                 _type = value;
             }
         }
