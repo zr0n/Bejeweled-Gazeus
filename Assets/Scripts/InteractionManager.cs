@@ -56,7 +56,6 @@ namespace BejeweledGazeus
             Ray ray = new Ray(cameraPos, direction);
 
             RaycastHit hit;
-            Debug.DrawRay(cameraPos, direction);
             if(Physics.Raycast(ray, out hit))
             {
                 if (hit.collider)

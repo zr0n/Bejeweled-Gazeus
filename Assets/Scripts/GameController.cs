@@ -25,8 +25,10 @@ namespace BejeweledGazeus
         public bool shouldCheckBoardOnNextFrame;
         [HideInInspector]
         public List<Fruit> movingFruits = new List<Fruit>();
+        [HideInInspector]
+        public Fruit fruitClicked;
 
-        static Vector2[] _directions =
+        readonly Vector2[] _directions =
         {
             Vector2.up,
             Vector2.left,
@@ -132,6 +134,24 @@ namespace BejeweledGazeus
             swap = new Fruit[] { a, b };
         }
 
+        public void StartPulsingNeighbours(Fruit fruit)
+        {
+            List<Fruit> neighbours = GetNeighbours(fruit);
+            foreach(var neighbour in neighbours)
+            {
+                neighbour.pulsingAnimation.StartAnimation();
+            }
+        }
+
+        public void StopPulsingNeighbours(Fruit fruit)
+        {
+            List<Fruit> neighbours = GetNeighbours(fruit);
+            foreach (var neighbour in neighbours)
+            {
+                neighbour.pulsingAnimation.StopAnimation();
+            }
+        }
+
         //Get a slot in given position
         public Slot GetSlot(Vector2 position)
         {
@@ -214,6 +234,29 @@ namespace BejeweledGazeus
             swap = new Fruit[0];
         }
 
+        public bool IsNeighbour(Fruit fruitA, Fruit fruitB)
+        {
+            List<Fruit> neighbours = GetNeighbours(fruitA);
+
+            return !!neighbours.Find((neighbour) => neighbour == fruitB);
+        }
+
+        List<Fruit> GetNeighbours(Fruit fruit)
+        {
+            List<Fruit> neighbours = new List<Fruit>();
+
+            foreach(var direction in _directions)
+            {
+                Vector2 position = fruit.slot.position + direction;
+                Fruit neighbourFruit = GetSlot(position).fruit;
+                if (neighbourFruit)
+                {
+                    neighbours.Add(neighbourFruit);
+                }
+            }
+
+            return neighbours;
+        }
         //Initialize the grid with random fruits
         void SetupGrid()
         {

@@ -11,6 +11,9 @@ namespace BejeweledGazeus
 
         [Tooltip("Minimum magnitude to move the piece")]
         public float minMagnitude = 32f;
+       
+        [Tooltip("The Pulsing animation component")]
+        public Pulsing pulsingAnimation;
 
         [HideInInspector]
         public FruitInteraction fruitInteraction;
@@ -26,10 +29,10 @@ namespace BejeweledGazeus
         [SerializeField]
         Vector3 forceVariation = new Vector3(2f, 2f, 2f);
 
-        bool _movingByMouseOrTouch;
-        bool _falling;
         Vector3 _mouseStart;
         Vector3 _movingTo;
+        bool _movingByMouseOrTouch;
+        bool _falling;
         bool _shouldMove;
         bool _justFinishedMovement
         {
@@ -88,12 +91,12 @@ namespace BejeweledGazeus
         public void StartFalling()
         {
             rigidBody.isKinematic = false;
-            ApplyRandomForceImpulse();
+            ApplyRandomForceAndTorqueImpulse();
             StartCoroutine(WaitAndDestroy());
         }
 
         //Apply random force and torque
-        void ApplyRandomForceImpulse()
+        void ApplyRandomForceAndTorqueImpulse()
         {
             float x = Random.Range(-Mathf.Abs(forceVariation.x), Mathf.Abs(forceVariation.x));
             float y = Random.Range(-Mathf.Abs(forceVariation.y), Mathf.Abs(forceVariation.y));
@@ -134,18 +137,43 @@ namespace BejeweledGazeus
         //When player click or touch this fruit
         void OnBecomeFocused()
         {
+            //avoid interaction while moving fruit
             if (_falling || GameController.instance.movingFruits.Count > 0) return;
-
+;
             StartFruitMovement();
         }
 
         //when player stop clicking or touching this fruit
         void OnLoseFocus()
         {
+            //avoid interaction while moving fruit
             if (_falling || GameController.instance.movingFruits.Count > 0) return;
 
             _movingByMouseOrTouch = false;
-            CheckSwap();
+
+            if(newGridPosition.Equals(slot.position))
+                OnClick();
+            else
+                CheckSwap();
+        }
+
+        //When the user clicks the fruit (and not keep pressing to drag)
+        void OnClick()
+        {
+            if (!GameController.instance.fruitClicked)
+            {
+                GameController.instance.fruitClicked = this;
+                GameController.instance.StartPulsingNeighbours(this);
+                GoToGridPosition();
+                return;
+            }
+            
+            GameController.instance.StopPulsingNeighbours(GameController.instance.fruitClicked);
+            
+            if(GameController.instance.fruitClicked != this && GameController.instance.IsNeighbour(this, GameController.instance.fruitClicked))
+                GameController.instance.SwapFruits(this, GameController.instance.fruitClicked);
+
+            GameController.instance.fruitClicked = null;
         }
 
         //Get fruit interaction component and add event listeners
