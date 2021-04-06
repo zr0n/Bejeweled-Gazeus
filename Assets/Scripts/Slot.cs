@@ -71,7 +71,8 @@ namespace BejeweledGazeus
             Banana = 2,
             Cherries = 3,
             Orange = 4,
-            Pear = 5
+            Pear = 5,
+            Unassigned = 6
         }
     }
 

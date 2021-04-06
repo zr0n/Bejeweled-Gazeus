@@ -7,16 +7,24 @@ namespace BejeweledGazeus
     public class GameController : MonoBehaviour
     {
         public GameObject[] fruitsTemplates;
-        [SerializeField]
-        int width = 8;
-        [SerializeField]
-        int height = 8;
+        public int width = 8;
+        public int height = 8;
+        public Slot.Group[] grid;
+        
         [SerializeField]
         GameObject gridParent;
+        [SerializeField]
+        float intervalBeforeCheckGrid = .5f;
 
-        public Slot.Group[] grid;
 
-        [HideInInspector] public Fruit[] swap;
+        [HideInInspector]
+        public Fruit[] swap;
+        [HideInInspector]
+        public int[] spawnPositions;
+        [HideInInspector]
+        public bool shouldCheckBoardOnNextFrame;
+        [HideInInspector]
+        public List<Fruit> movingFruits = new List<Fruit>();
 
         static Vector2[] _directions =
         {
@@ -57,6 +65,46 @@ namespace BejeweledGazeus
             SetupGrid();
             CheckConnectedNeighbours();
             SpawnFruits();
+
+            spawnPositions = new int[width];
+        }
+
+        void Update()
+        {
+            ClearMovingFruits();
+            if (movingFruits.Count == 0 && shouldCheckBoardOnNextFrame)
+            {
+                shouldCheckBoardOnNextFrame = false;
+                StartCoroutine(WaitAndCheckBoard());
+            }
+        }
+
+        IEnumerator WaitAndCheckBoard()
+        {
+            yield return new WaitForSeconds(intervalBeforeCheckGrid);
+            CheckConnectedNeighbours();
+        }
+
+        void ClearMovingFruits()
+        {
+            while(IsThereAnInvalidMovingFruit())
+            {
+                for (int i = 0; i < movingFruits.Count; i++)
+                {
+                    if (!movingFruits[i])
+                        movingFruits.RemoveAt(i);
+                }
+            }
+            
+        }
+
+        bool IsThereAnInvalidMovingFruit()
+        {
+            foreach (Fruit fruit in movingFruits)
+                if (!fruit)
+                    return true;
+
+            return false;
         }
 
         //Cast a position in grid (Vector2) to a position in the world (Vector3)
@@ -88,10 +136,23 @@ namespace BejeweledGazeus
         public Slot GetSlot(Vector2 position)
         {
             if (position.x < 0f || grid.Length <= position.x)
-                return new Slot(position);
+            {
+                Slot newSlot = new Slot(position);
+                newSlot.type = Slot.Type.Unassigned;
+                return newSlot;
+            }
 
             var line = grid[(int)position.x];
-            var slot = line.slots.Length > position.y && position.y > -1f ? line.slots[(int)position.y] : new Slot(position);
+            Slot slot;
+            if(position.y < height && position.y > -1f)
+            {
+                slot = line.slots[(int)position.y];
+            }
+            else
+            {
+                slot = new Slot(position);
+                slot.type = Slot.Type.Unassigned;
+            }
             
             return slot;
         }
@@ -99,7 +160,7 @@ namespace BejeweledGazeus
         //Search for matching neighbours and delete them
         public void CheckConnectedNeighbours()
         {
-            List<Slot> delete = new List<Slot>();
+            List<Slot> delete;
             bool matchedAtLeastThree = false;
 
             for (int i = 0; i < width; i++)
@@ -109,7 +170,8 @@ namespace BejeweledGazeus
                     Vector2 position = new Vector2(i, j);
                     Slot.Type fruitType = GetType(position);
 
-                    if (fruitType == Slot.Type.Blank) continue;
+                    if (fruitType == Slot.Type.Blank || fruitType == Slot.Type.Unassigned)
+                        continue;
 
                     delete = new List<Slot>();
 
@@ -123,9 +185,6 @@ namespace BejeweledGazeus
                         matchedAtLeastThree = true;
 
                         SetTypeAt(position, GetNewFruitType(delete));
-
-                        Slot slot = GetSlot(position);
-                        //check callstack setter
                     }
 
                     foreach (var slot in delete)
@@ -145,10 +204,13 @@ namespace BejeweledGazeus
             if (!matchedAtLeastThree && swap.Length > 0)
             {
                 SwapFruits(swap[0], swap[1]);
-                swap = new Fruit[0];
             }
-            else if(matchedAtLeastThree)
+            else if (matchedAtLeastThree)
+            {
                 PushFruitsDown();
+                shouldCheckBoardOnNextFrame = true;
+            }
+            swap = new Fruit[0];
         }
 
         //Initialize the grid with random fruits
@@ -301,7 +363,8 @@ namespace BejeweledGazeus
                     Slot slot = GetSlot(position);
 
                     //If it is not an empty space: do nothing
-                    if (slot.type != Slot.Type.Blank) continue;
+                    if (slot.type != Slot.Type.Blank)
+                        continue;
 
                     //else move the pieces down;
                     for(int k = (j - 1); k > -2; k--)
@@ -310,19 +373,15 @@ namespace BejeweledGazeus
                         Vector2 nextPosition = new Vector2(i, k);
                         Slot nextSlot = GetSlot(nextPosition);
 
-                        if (nextSlot.type == Slot.Type.Blank) continue;
+                        if (nextSlot.type == Slot.Type.Blank)
+                            continue;
 
-                        if (k >= 0 && k < height)
+                        if (nextSlot.type != Slot.Type.Unassigned)
                         {
-                            Debug.Log("Moving " + i + "," + k + " " + nextSlot.position + " to " + slot.position);
-                            if(nextSlot.position.x != slot.position.x)
-                            {
-                                Debug.Log(nextSlot.position);
-                            }
                             slot.fruit = nextSlot.fruit;
                             slot.type = nextSlot.type;
                             slot.fruit.SetSlot(slot);
-                            //slot.position = nextSlot.position;
+
                             grid[(int)slot.position.x].slots[(int)slot.position.y] = slot;
 
                             nextSlot.fruit.GoToGridPosition();
@@ -331,18 +390,24 @@ namespace BejeweledGazeus
                             nextSlot.type = Slot.Type.Blank;
 
                             grid[(int)nextSlot.position.x].slots[(int)nextSlot.position.y] = nextSlot;
-                            //slot = nextSlot;
-                            //grid[(int)slot.position.x].slots[(int)slot.position.y] = nextSlot;
-
-                            //nextSlot.type = Slot.Type.Blank;
-                            /*
-                            int randomIndex = Random.Range(0, fruitsTemplates.Length);
-                            Fruit newFruit = Instantiate(fruitsTemplates[randomIndex], gridParent.transform).GetComponent<Fruit>();
-                            */
                         }
                         else
                         {
                             //instantiate new fruits
+                            int randomIndex = Random.Range(0, fruitsTemplates.Length);
+                            Vector2 spawnPosition = new Vector2(i, -1 - spawnPositions[i]);
+
+
+                            GameObject newFruitObject = Instantiate(fruitsTemplates[randomIndex], gridParent.transform);
+                            Fruit newFruit = newFruitObject.GetComponent<Fruit>();
+                            slot.type = (Slot.Type) (randomIndex + 1);
+                            newFruit.SetSlot(slot);
+                            newFruitObject.transform.localPosition = GridToWorldPosition(spawnPosition);
+                            grid[(int)slot.position.x].slots[(int)slot.position.y] = slot;
+
+                            newFruit.GoToGridPosition();
+
+                            spawnPositions[i]++;
                         }
                         break;
                     }
@@ -396,7 +461,7 @@ namespace BejeweledGazeus
             //Loop through all values
             foreach (var type in types)
             {
-                if (type == Slot.Type.Blank) continue;
+                if (type == Slot.Type.Blank || type == Slot.Type.Unassigned) continue;
                 filtered.Add(type);
             }
 

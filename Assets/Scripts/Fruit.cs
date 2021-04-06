@@ -25,12 +25,18 @@ namespace BejeweledGazeus
         Vector3 _mouseStart;
         Vector3 _movingTo;
         bool _shouldMove;
+        bool _justFinishedMovement
+        {
+            get
+            {
+                return _shouldMove && Vector3.Distance(transform.localPosition, _movingTo) < .01f;
+            }
+        }
 
         // Start is called before the first frame update
         void Start()
         {
             SetupFruitInteraction();
-            
         }
 
         // Update is called once per frame
@@ -53,12 +59,16 @@ namespace BejeweledGazeus
             {
                 SmoothMoveTo(_movingTo);
 
-                if (Vector3.Distance(transform.localPosition, _movingTo) < .01f)
+                if (_justFinishedMovement)
                 {
                     _shouldMove = false;
+                    GameController.instance.movingFruits.Remove(this);
 
-                    if (GameController.instance.swap.Length > 0 && GameController.instance.swap[0] == this)
-                        GameController.instance.CheckConnectedNeighbours();
+                    if(GameController.instance.swap.Length > 0 && GameController.instance.swap[0] == this)
+                        GameController.instance.shouldCheckBoardOnNextFrame = true;
+
+                    GameController.instance.spawnPositions[(int)slot.position.x] =
+                        Mathf.Clamp(GameController.instance.spawnPositions[(int)slot.position.x] - 1, 0, GameController.instance.width);
                 }
             }
         }
@@ -108,6 +118,7 @@ namespace BejeweledGazeus
         //Move the fruit to where it belongs in grid
         public void GoToGridPosition()
         {
+            GameController.instance.movingFruits.Add(this);
             _movingTo = GameController.GridToWorldPosition(slot.position);
             _shouldMove = true;
         }
