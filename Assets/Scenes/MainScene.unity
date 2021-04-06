@@ -706,6 +706,7 @@ MonoBehaviour:
   spawnPositions: 
   shouldCheckBoardOnNextFrame: 0
   movingFruits: []
+  fruitClicked: {fileID: 0}
 --- !u!4 &400736892
 Transform:
   m_ObjectHideFlags: 0

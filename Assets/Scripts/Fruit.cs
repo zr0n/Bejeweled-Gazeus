@@ -28,6 +28,8 @@ namespace BejeweledGazeus
         float intervalBeforeDestroy = 3f;
         [SerializeField]
         Vector3 forceVariation = new Vector3(2f, 2f, 2f);
+        [SerializeField]
+        Rotator rotator;
 
         Vector3 _mouseStart;
         Vector3 _movingTo;
@@ -91,6 +93,7 @@ namespace BejeweledGazeus
         public void StartFalling()
         {
             rigidBody.isKinematic = false;
+            rotator.enabled = false;
             ApplyRandomForceAndTorqueImpulse();
             StartCoroutine(WaitAndDestroy());
         }
@@ -164,12 +167,14 @@ namespace BejeweledGazeus
             {
                 GameController.instance.fruitClicked = this;
                 GameController.instance.StartPulsingNeighbours(this);
+                rotator.StartRotation();
                 GoToGridPosition();
                 return;
             }
             
             GameController.instance.StopPulsingNeighbours(GameController.instance.fruitClicked);
-            
+            GameController.instance.fruitClicked.rotator.StopRotation();
+
             if(GameController.instance.fruitClicked != this && GameController.instance.IsNeighbour(this, GameController.instance.fruitClicked))
                 GameController.instance.SwapFruits(this, GameController.instance.fruitClicked);
 
