@@ -7,21 +7,27 @@ namespace BejeweledGazeus
     public class Fruit : MonoBehaviour
     {
         [Tooltip("The speed that the fruit will move following the mouse")]
-        public float moveSpeed = 15f;
+        public float moveSpeed = 5f;
 
         [Tooltip("Minimum magnitude to move the piece")]
         public float minMagnitude = 32f;
 
         [HideInInspector]
         public FruitInteraction fruitInteraction;
-
         [HideInInspector]
         public Vector2 newGridPosition;
-
-        //[HideInInspector]
+        [HideInInspector]
         public Slot slot;
 
+        [SerializeField]
+        Rigidbody rigidBody;
+        [SerializeField]
+        float intervalBeforeDestroy = 3f;
+        [SerializeField]
+        Vector3 forceVariation = new Vector3(2f, 2f, 2f);
+
         bool _movingByMouseOrTouch;
+        bool _falling;
         Vector3 _mouseStart;
         Vector3 _movingTo;
         bool _shouldMove;
@@ -36,6 +42,7 @@ namespace BejeweledGazeus
         // Start is called before the first frame update
         void Start()
         {
+            rigidBody.isKinematic = true;
             SetupFruitInteraction();
         }
 
@@ -50,57 +57,6 @@ namespace BejeweledGazeus
         {
             slot.fruit = this;
             this.slot = slot;
-        }
-
-        //Check if fruit should be going to some place automatically
-        void CheckAutoMovement()
-        {
-            if (_shouldMove)
-            {
-                SmoothMoveTo(_movingTo);
-
-                if (_justFinishedMovement)
-                {
-                    _shouldMove = false;
-                    GameController.instance.movingFruits.Remove(this);
-
-                    if(GameController.instance.swap.Length > 0 && GameController.instance.swap[0] == this)
-                        GameController.instance.shouldCheckBoardOnNextFrame = true;
-
-                    GameController.instance.spawnPositions[(int)slot.position.x] =
-                        Mathf.Clamp(GameController.instance.spawnPositions[(int)slot.position.x] - 1, 0, GameController.instance.width);
-                }
-            }
-        }
-
-        //When player click or touch this fruit
-        void OnBecomeFocused()
-        {
-            StartFruitMovement();
-        }
-
-        //when player stop clicking or touching this fruit
-        void OnLoseFocus()
-        {
-            _movingByMouseOrTouch = false;
-            CheckSwap();
-        }
-
-        //Get fruit interaction component and add event listeners
-        void SetupFruitInteraction()
-        {
-            if (!fruitInteraction)
-                fruitInteraction = GetComponent<FruitInteraction>();
-
-            if (!fruitInteraction)
-            {
-                Debug.LogError("No Fruit interaction detected.");
-            }
-            else
-            {
-                fruitInteraction.pointerDown.AddListener(OnBecomeFocused);
-                fruitInteraction.pointerUp.AddListener(OnLoseFocus);
-            }
         }
 
         public void SmoothMoveTo(Vector2 position)
@@ -127,6 +83,86 @@ namespace BejeweledGazeus
         {
             Slot newSlot = new Slot(position, slot.type, this);
             slot = newSlot;
+        }
+
+        public void StartFalling()
+        {
+            rigidBody.isKinematic = false;
+            ApplyRandomForceImpulse();
+            StartCoroutine(WaitAndDestroy());
+        }
+
+        //Apply random force and torque
+        void ApplyRandomForceImpulse()
+        {
+            float x = Random.Range(-Mathf.Abs(forceVariation.x), Mathf.Abs(forceVariation.x));
+            float y = Random.Range(-Mathf.Abs(forceVariation.y), Mathf.Abs(forceVariation.y));
+            float z = Random.Range(-Mathf.Abs(forceVariation.z), Mathf.Abs(forceVariation.z));
+
+            Vector3 force = new Vector3(x, y, z);
+
+            rigidBody.AddForce(force, ForceMode.Impulse);
+            rigidBody.AddTorque(force, ForceMode.Impulse);
+        }
+
+        IEnumerator WaitAndDestroy()
+        {
+            yield return new WaitForSeconds(intervalBeforeDestroy);
+            Destroy(gameObject);
+        }
+        //Check if fruit should be going to some place automatically
+        void CheckAutoMovement()
+        {
+            if (_shouldMove)
+            {
+                SmoothMoveTo(_movingTo);
+
+                if (_justFinishedMovement)
+                {
+                    _shouldMove = false;
+                    GameController.instance.movingFruits.Remove(this);
+
+                    if(GameController.instance.swap.Length > 0 && GameController.instance.swap[0] == this)
+                        GameController.instance.shouldCheckBoardOnNextFrame = true;
+
+                    GameController.instance.spawnPositions[(int)slot.position.x] =
+                        Mathf.Clamp(GameController.instance.spawnPositions[(int)slot.position.x] - 1, 0, GameController.instance.width);
+                }
+            }
+        }
+
+        //When player click or touch this fruit
+        void OnBecomeFocused()
+        {
+            if (_falling || GameController.instance.movingFruits.Count > 0) return;
+
+            StartFruitMovement();
+        }
+
+        //when player stop clicking or touching this fruit
+        void OnLoseFocus()
+        {
+            if (_falling || GameController.instance.movingFruits.Count > 0) return;
+
+            _movingByMouseOrTouch = false;
+            CheckSwap();
+        }
+
+        //Get fruit interaction component and add event listeners
+        void SetupFruitInteraction()
+        {
+            if (!fruitInteraction)
+                fruitInteraction = GetComponent<FruitInteraction>();
+
+            if (!fruitInteraction)
+            {
+                Debug.LogError("No Fruit interaction detected.");
+            }
+            else
+            {
+                fruitInteraction.pointerDown.AddListener(OnBecomeFocused);
+                fruitInteraction.pointerUp.AddListener(OnLoseFocus);
+            }
         }
 
         //Check if the fruit should move, then add its offset

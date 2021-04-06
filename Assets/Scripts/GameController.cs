@@ -191,7 +191,8 @@ namespace BejeweledGazeus
                     {
                         if (slot.fruit)
                         {
-                            Destroy(slot.fruit.gameObject);
+                            //Destroy(slot.fruit.gameObject);
+                            slot.fruit.StartFalling();
                             slot.type = Slot.Type.Blank;
                             slot.fruit = null;
                             grid[(int)slot.position.x].slots[(int)slot.position.y] = slot;
