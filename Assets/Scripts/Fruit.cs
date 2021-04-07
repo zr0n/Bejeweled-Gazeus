@@ -21,6 +21,9 @@ namespace BejeweledGazeus
         public Vector2 newGridPosition;
         [HideInInspector]
         public Slot slot;
+        [HideInInspector]
+        public bool falling;
+
 
         [SerializeField]
         Rigidbody rigidBody;
@@ -34,7 +37,6 @@ namespace BejeweledGazeus
         Vector3 _mouseStart;
         Vector3 _movingTo;
         bool _movingByMouseOrTouch;
-        bool _falling;
         bool _shouldMove;
         bool _justFinishedMovement
         {
@@ -141,7 +143,7 @@ namespace BejeweledGazeus
         void OnBecomeFocused()
         {
             //avoid interaction while moving fruit
-            if (_falling || GameController.instance.movingFruits.Count > 0) return;
+            if (falling || GameController.instance.movingFruits.Count > 0) return;
 ;
             StartFruitMovement();
         }
@@ -150,7 +152,7 @@ namespace BejeweledGazeus
         void OnLoseFocus()
         {
             //avoid interaction while moving fruit
-            if (_falling || GameController.instance.movingFruits.Count > 0) return;
+            if (falling || GameController.instance.movingFruits.Count > 0) return;
 
             _movingByMouseOrTouch = false;
 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace BejeweledGazeus
 {
@@ -10,12 +11,18 @@ namespace BejeweledGazeus
         public int width = 8;
         public int height = 8;
         public Slot.Group[] grid;
+        public TimeManager timeManager;
         
         [SerializeField]
         GameObject gridParent;
         [SerializeField]
         float intervalBeforeCheckGrid = .5f;
-
+        [SerializeField]
+        GameObject gameOverUI;
+        [SerializeField]
+        int scoreByFruit;
+        [SerializeField]
+        float timeToIncrementByFruit = .5f;
 
         [HideInInspector]
         public Fruit[] swap;
@@ -27,6 +34,10 @@ namespace BejeweledGazeus
         public List<Fruit> movingFruits = new List<Fruit>();
         [HideInInspector]
         public Fruit fruitClicked;
+        [HideInInspector]
+        public bool interactionBlocked;
+        [HideInInspector]
+        public bool gameStarted;
 
         readonly Vector2[] _directions =
         {
@@ -35,7 +46,6 @@ namespace BejeweledGazeus
             Vector2.down,
             Vector2.right
         };
-
 
         #region Singleton
         //Singleton Setup (variables)
@@ -81,32 +91,10 @@ namespace BejeweledGazeus
             }
         }
 
-        IEnumerator WaitAndCheckBoard()
+        public void StartGame()
         {
-            yield return new WaitForSeconds(intervalBeforeCheckGrid);
-            CheckConnectedNeighbours();
-        }
-
-        void ClearMovingFruits()
-        {
-            while(IsThereAnInvalidMovingFruit())
-            {
-                for (int i = 0; i < movingFruits.Count; i++)
-                {
-                    if (!movingFruits[i])
-                        movingFruits.RemoveAt(i);
-                }
-            }
-            
-        }
-
-        bool IsThereAnInvalidMovingFruit()
-        {
-            foreach (Fruit fruit in movingFruits)
-                if (!fruit)
-                    return true;
-
-            return false;
+            interactionBlocked = false;
+            gameStarted = true;
         }
 
         //Cast a position in grid (Vector2) to a position in the world (Vector3)
@@ -180,7 +168,8 @@ namespace BejeweledGazeus
         //Search for matching neighbours and delete them
         public void CheckConnectedNeighbours()
         {
-            List<Slot> delete;
+            List<Slot> connected;
+
             bool matchedAtLeastThree = false;
 
             for (int i = 0; i < width; i++)
@@ -193,25 +182,27 @@ namespace BejeweledGazeus
                     if (fruitType == Slot.Type.Blank || fruitType == Slot.Type.Unassigned)
                         continue;
 
-                    delete = new List<Slot>();
-
+                    connected = new List<Slot>();
                     while (GetConnectedNeighbours(position).slots.Length > 0)
                     {
                         var connectedSlots = GetConnectedNeighbours(position).slots;
                         foreach(var s in connectedSlots)
                         {
-                            delete.Add(s);
+                            connected.Add(s);
                         }
                         matchedAtLeastThree = true;
 
-                        SetTypeAt(position, GetNewFruitType(delete));
+                        SetTypeAt(position, GetNewFruitType(connected));
                     }
 
-                    foreach (var slot in delete)
+
+                    foreach (var slot in connected)
                     {
-                        if (slot.fruit)
+                        if (slot.fruit && !slot.fruit.falling)
                         {
-                            //Destroy(slot.fruit.gameObject);
+                            ScoreManager.instance.score += scoreByFruit;
+                            timeManager.IncreaseTimer(timeToIncrementByFruit);
+
                             slot.fruit.StartFalling();
                             slot.type = Slot.Type.Blank;
                             slot.fruit = null;
@@ -239,6 +230,20 @@ namespace BejeweledGazeus
             List<Fruit> neighbours = GetNeighbours(fruitA);
 
             return !!neighbours.Find((neighbour) => neighbour == fruitB);
+        }
+
+        public void GameOver()
+        {
+            interactionBlocked = true;
+            gameOverUI.SetActive(true);
+            FindObjectOfType<Fader>().imageFader.transform.parent.gameObject.SetActive(false);
+
+            timeManager.AnimateSliderOut();
+        }
+
+        public void RestartGame()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         List<Fruit> GetNeighbours(Fruit fruit)
@@ -394,6 +399,35 @@ namespace BejeweledGazeus
         Slot.Type GetType(Vector2 position)
         {
             return GetSlot(position).type;
+        }
+
+
+        IEnumerator WaitAndCheckBoard()
+        {
+            yield return new WaitForSeconds(intervalBeforeCheckGrid);
+            CheckConnectedNeighbours();
+        }
+
+        void ClearMovingFruits()
+        {
+            while (IsThereAnInvalidMovingFruit())
+            {
+                for (int i = 0; i < movingFruits.Count; i++)
+                {
+                    if (!movingFruits[i])
+                        movingFruits.RemoveAt(i);
+                }
+            }
+
+        }
+
+        bool IsThereAnInvalidMovingFruit()
+        {
+            foreach (Fruit fruit in movingFruits)
+                if (!fruit)
+                    return true;
+
+            return false;
         }
 
         //Push fruits to the neighbour down slot if it's empty

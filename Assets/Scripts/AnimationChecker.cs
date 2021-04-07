@@ -6,7 +6,6 @@ namespace BejeweledGazeus
 {
     public class AnimationChecker : MonoBehaviour
     {
-
         static bool _playedAnimationBefore;
         // Start is called before the first frame update
         void Start()
@@ -22,10 +21,9 @@ namespace BejeweledGazeus
             _playedAnimationBefore = true;
         }
 
-        // Update is called once per frame
-        void Update()
+        public void OnFinishAnimation()
         {
-
+            GameController.instance.timeManager.AnimateSliderIn();
         }
     }
 }

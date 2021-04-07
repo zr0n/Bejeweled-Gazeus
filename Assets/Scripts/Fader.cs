@@ -38,6 +38,8 @@ namespace BejeweledGazeus
                 time += Time.deltaTime;
                 yield return null;
             }
+            imageFader.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, newAlpha);
+
         }
     }
 }

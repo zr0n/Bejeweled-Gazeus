@@ -11,6 +11,9 @@ namespace BejeweledGazeus
         // Update is called once per frame
         void Update()
         {
+            if (GameController.instance.interactionBlocked || !GameController.instance.gameStarted)
+                return;
+
             if (JustPressedMouseOrTouch())
             {
                 CheckForFruitInMousePosition();
