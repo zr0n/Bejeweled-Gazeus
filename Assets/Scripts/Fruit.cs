@@ -14,13 +14,12 @@ namespace BejeweledGazeus
        
         [Tooltip("The Pulsing animation component")]
         public Pulsing pulsingAnimation;
+        public Slot slot;
 
         [HideInInspector]
         public FruitInteraction fruitInteraction;
         [HideInInspector]
         public Vector2 newGridPosition;
-        [HideInInspector]
-        public Slot slot;
         [HideInInspector]
         public bool falling;
 
@@ -38,6 +37,10 @@ namespace BejeweledGazeus
         Vector3 _movingTo;
         bool _movingByMouseOrTouch;
         bool _shouldMove;
+        Rotator _rotator;
+        Pulsing _pulsing;
+        Slot.Type _originalType;
+
         bool _justFinishedMovement
         {
             get
@@ -50,6 +53,8 @@ namespace BejeweledGazeus
         void Start()
         {
             rigidBody.isKinematic = true;
+            _rotator = GetComponent<Rotator>();
+            _pulsing = GetComponent<Pulsing>();
             SetupFruitInteraction();
         }
 
@@ -64,6 +69,7 @@ namespace BejeweledGazeus
         {
             slot.fruit = this;
             this.slot = slot;
+            _originalType = slot.type;
         }
 
         public void SmoothMoveTo(Vector2 position)
@@ -91,13 +97,22 @@ namespace BejeweledGazeus
             Slot newSlot = new Slot(position, slot.type, this);
             slot = newSlot;
         }
-
+        public void ResetFruit()
+        {
+            falling = false;
+            _movingByMouseOrTouch = false;
+            _shouldMove = false;
+            rigidBody.isKinematic = true;
+            _rotator.ResetRotation();
+            _pulsing.ResetPulsing();
+        }
         public void StartFalling()
         {
+            falling = true;
             rigidBody.isKinematic = false;
             rotator.enabled = false;
             ApplyRandomForceAndTorqueImpulse();
-            StartCoroutine(WaitAndDestroy());
+            StartCoroutine(WaitAndRecycle());
         }
 
         //Apply random force and torque
@@ -113,10 +128,10 @@ namespace BejeweledGazeus
             rigidBody.AddTorque(force, ForceMode.Impulse);
         }
 
-        IEnumerator WaitAndDestroy()
+        IEnumerator WaitAndRecycle()
         {
             yield return new WaitForSeconds(intervalBeforeDestroy);
-            Destroy(gameObject);
+            GameController.instance.pool.Recycle(_originalType, this);
         }
         //Check if fruit should be going to some place automatically
         void CheckAutoMovement()

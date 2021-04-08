@@ -12,6 +12,7 @@ namespace BejeweledGazeus
         public int height = 8;
         public Slot.Group[] grid;
         public TimeManager timeManager;
+        public ObjectPool pool;
         
         [SerializeField]
         GameObject gridParent;
@@ -291,11 +292,12 @@ namespace BejeweledGazeus
                     Slot.Type type = grid[i].slots[j].type;
                     if (type == Slot.Type.Blank) continue;
 
-                    GameObject template = fruitsTemplates[(int) (type - 1)];
+                    //GameObject template = fruitsTemplates[(int) (type - 1)];
 
-                    GameObject fruitObject = Instantiate(template, gridParent.transform);
-                    
-                    Fruit fruit = fruitObject.GetComponent<Fruit>();
+                    //GameObject fruitObject = Instantiate(template, gridParent.transform);
+                    Fruit fruit = pool.GetFromPoolOrSpawn(type);
+                    fruit.transform.parent = gridParent.transform;
+
                     fruit.SetSlot(grid[i].slots[j]);
                     fruit.transform.localPosition = new Vector3(-2f + i, 7f - j);
                 }
@@ -476,11 +478,12 @@ namespace BejeweledGazeus
                             Vector2 spawnPosition = new Vector2(i, -1 - spawnPositions[i]);
 
 
-                            GameObject newFruitObject = Instantiate(fruitsTemplates[randomIndex], gridParent.transform);
-                            Fruit newFruit = newFruitObject.GetComponent<Fruit>();
+                            //GameObject newFruitObject = Instantiate(fruitsTemplates[randomIndex], gridParent.transform);
                             slot.type = (Slot.Type) (randomIndex + 1);
+                            Fruit newFruit = pool.GetFromPoolOrSpawn(slot.type);
+                            newFruit.transform.parent = gridParent.transform;
                             newFruit.SetSlot(slot);
-                            newFruitObject.transform.localPosition = GridToWorldPosition(spawnPosition);
+                            newFruit.transform.localPosition = GridToWorldPosition(spawnPosition);
                             grid[(int)slot.position.x].slots[(int)slot.position.y] = slot;
 
                             newFruit.GoToGridPosition();

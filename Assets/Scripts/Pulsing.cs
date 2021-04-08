@@ -36,6 +36,12 @@ namespace BejeweledGazeus
             _phase = AnimatePhase.AnimatingDown;
             StartCoroutine(AnimateScale(_initialScale));
         }
+        public void ResetPulsing()
+        {
+            StopAllCoroutines();
+            transformToAnimate.localScale = Vector3.one * _initialScale;
+        }
+
         void ToggleAnimation()
         {
             StopAllCoroutines();

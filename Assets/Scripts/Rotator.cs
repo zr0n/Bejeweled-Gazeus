@@ -24,12 +24,15 @@ namespace BejeweledGazeus
         void Update()
         {
             if (_rotating)
-            {
-                Debug.Log("Rotating " + (rotationDirection * rotationSpeed * Time.deltaTime));
                 transform.Rotate(rotationDirection * rotationSpeed * Time.deltaTime);
-            }
             else
                 transform.rotation = Quaternion.Lerp(transform.rotation, _originalRotation, rotationSpeed * Time.deltaTime);
+        }
+
+        public void ResetRotation()
+        {
+            _rotating = false;
+            transform.rotation = _originalRotation;
         }
 
         public void StartRotation()
