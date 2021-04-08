@@ -87,7 +87,7 @@ namespace BejeweledGazeus
         void Update()
         {
             ClearMovingFruits();
-            interactionBlocked = movingFruits.Count > 0;
+            interactionBlocked = interactionBlocked || movingFruits.Count > 0;
             if (movingFruits.Count == 0 && shouldCheckBoardOnNextFrame)
             {
                 shouldCheckBoardOnNextFrame = false;
