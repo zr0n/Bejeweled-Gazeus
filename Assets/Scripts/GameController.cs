@@ -24,6 +24,8 @@ namespace BejeweledGazeus
         int scoreByFruit;
         [SerializeField]
         float timeToIncrementByFruit = .5f;
+        [SerializeField]
+        AudioManager audioManager;
 
         [HideInInspector]
         public Fruit[] swap;
@@ -220,6 +222,9 @@ namespace BejeweledGazeus
             }
             else if (matchedAtLeastThree)
             {
+                if(gameStarted) //avoid doing this on initial frame
+                    audioManager.PlayAudioClearFruit();
+
                 PushFruitsDown();
                 shouldCheckBoardOnNextFrame = true;
             }
