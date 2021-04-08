@@ -23,9 +23,12 @@ namespace BejeweledGazeus
         bool _animating;
         RectTransform _rectTransform;
 
-        void Start()
+        private void Awake()
         {
             _rectTransform = (timeSlider.transform as RectTransform);
+        }
+        void Start()
+        {
             _currentTime = initialTime;
             _sliderWidth = _rectTransform.rect.width;
             _sliderHeight = _rectTransform.rect.height;

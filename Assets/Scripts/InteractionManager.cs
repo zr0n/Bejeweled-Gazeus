@@ -6,6 +6,8 @@ namespace BejeweledGazeus
 {
     public class InteractionManager : MonoBehaviour
     {
+        public static FruitInteraction focusedFruit => _focusedFruit;
+
         static FruitInteraction _focusedFruit;
 
         // Update is called once per frame

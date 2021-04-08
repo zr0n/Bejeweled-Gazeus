@@ -96,12 +96,13 @@ MonoBehaviour:
   moveSpeed: 9
   minMagnitude: 13
   pulsingAnimation: {fileID: -716995994856475573}
-  fruitInteraction: {fileID: 0}
-  newGridPosition: {x: 0, y: 0}
   slot:
     position: {x: 0, y: 0}
     fruit: {fileID: 0}
     _type: 0
+  fruitInteraction: {fileID: 0}
+  newGridPosition: {x: 0, y: 0}
+  falling: 0
   rigidBody: {fileID: 7589196556273827476}
   intervalBeforeDestroy: 3
   forceVariation: {x: 2, y: 2, z: 2}
@@ -153,6 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotationDirection: {x: 0, y: 1, z: 0}
+  backToOriginalRotationSpeed: 5
   rotationSpeed: 220
 --- !u!54 &7589196556273827476
 Rigidbody:

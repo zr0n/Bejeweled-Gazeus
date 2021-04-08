@@ -157,6 +157,12 @@ namespace BejeweledGazeus
         //When player click or touch this fruit
         void OnBecomeFocused()
         {
+            if (GameController.instance.fruitClicked)
+            {
+                GameController.instance.fruitClicked.rotator.StopRotation();
+                GameController.instance.StopPulsingNeighbours(GameController.instance.fruitClicked);
+            }
+
             //avoid interaction while moving fruit
             if (falling || GameController.instance.movingFruits.Count > 0) return;
 ;
@@ -186,14 +192,18 @@ namespace BejeweledGazeus
                 GameController.instance.StartPulsingNeighbours(this);
                 rotator.StartRotation();
                 GoToGridPosition();
-                return;
             }
-            
-            GameController.instance.StopPulsingNeighbours(GameController.instance.fruitClicked);
-            GameController.instance.fruitClicked.rotator.StopRotation();
 
-            if(GameController.instance.fruitClicked != this && GameController.instance.IsNeighbour(this, GameController.instance.fruitClicked))
+            if (GameController.instance.fruitClicked == this)
+                return;
+            
+            GameController.instance.fruitClicked.rotator.StopRotation();
+            GameController.instance.StopPulsingNeighbours(GameController.instance.fruitClicked);
+
+            if (GameController.instance.IsNeighbour(this, GameController.instance.fruitClicked))
                 GameController.instance.SwapFruits(this, GameController.instance.fruitClicked);
+
+            
 
             GameController.instance.fruitClicked = null;
         }
@@ -246,6 +256,9 @@ namespace BejeweledGazeus
         //Check if can swap
         void CheckSwap()
         {
+            if (GameController.instance.fruitClicked)
+                GameController.instance.fruitClicked = null;
+            
             if (newGridPosition.Equals(slot.position)) return;
 
             Slot otherSlot = GameController.instance.GetSlot(newGridPosition);

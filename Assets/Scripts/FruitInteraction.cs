@@ -9,6 +9,7 @@ namespace BejeweledGazeus
     {
         public UnityEvent pointerDown; 
         public UnityEvent pointerUp;
+
         public void BecomeFocused()
         {
             pointerDown?.Invoke();

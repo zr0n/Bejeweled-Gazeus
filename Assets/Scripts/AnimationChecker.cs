@@ -15,6 +15,7 @@ namespace BejeweledGazeus
                 GetComponent<Animator>().enabled = false;
                 Fader fader = GetComponent<Fader>();
                 fader.imageFader.color = new Color(fader.fadeColor.r, fader.fadeColor.g, fader.fadeColor.b, 0f);
+                GameController.instance.timeManager.AnimateSliderIn();
                 return;
             }
 

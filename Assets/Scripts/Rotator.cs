@@ -10,7 +10,10 @@ namespace BejeweledGazeus
         [SerializeField]
         Vector3 rotationDirection = new Vector3(0f, 1f, 0f);
         [SerializeField]
-        float rotationSpeed = 15f;
+        float backToOriginalRotationSpeed = 15f;
+
+        [SerializeField]
+        float rotationSpeed = 220f;
 
         bool _rotating;
         Quaternion _originalRotation;
@@ -26,7 +29,7 @@ namespace BejeweledGazeus
             if (_rotating)
                 transform.Rotate(rotationDirection * rotationSpeed * Time.deltaTime);
             else
-                transform.rotation = Quaternion.Lerp(transform.rotation, _originalRotation, rotationSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.Lerp(transform.rotation, _originalRotation, backToOriginalRotationSpeed * Time.deltaTime);
         }
 
         public void ResetRotation()
