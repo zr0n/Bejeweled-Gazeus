@@ -58,11 +58,11 @@ PrefabInstance:
     - target: {fileID: 6521152875664909109, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: -2563484936441039104, guid: 8aaa8747c1fce80429244fd667cc5b67, type: 3}
+      objectReference: {fileID: 2100000, guid: d07ad3f27d14fb1449a7ba9010e979d0, type: 2}
     - target: {fileID: 6521152875664909109, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
       propertyPath: m_Materials.Array.data[1]
       value: 
-      objectReference: {fileID: 1675149491675447186, guid: 8aaa8747c1fce80429244fd667cc5b67, type: 3}
+      objectReference: {fileID: -2609809028551464901, guid: 98a6022d923164144a75c615ac5ee307, type: 3}
     - target: {fileID: 7735622700816992161, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
       propertyPath: m_Mesh
       value: 

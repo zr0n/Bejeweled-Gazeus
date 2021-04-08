@@ -53,16 +53,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5510103359828662734, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
       propertyPath: m_Name
-      value: Apple_Variant
+      value: Banana_Variant
       objectReference: {fileID: 0}
     - target: {fileID: 6521152875664909109, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 335274542614986364, guid: ffc905f856d3bd64891680b8544be262, type: 3}
+      objectReference: {fileID: 2100000, guid: 864cc4dd6848f5b4d9bfecbc5bcbfd6f, type: 2}
     - target: {fileID: 6521152875664909109, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
       propertyPath: m_Materials.Array.data[1]
       value: 
-      objectReference: {fileID: 2669318267019956826, guid: ffc905f856d3bd64891680b8544be262, type: 3}
+      objectReference: {fileID: 2100000, guid: 2b10f7c1111e4494392bd368bb030949, type: 2}
     - target: {fileID: 7735622700816992161, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
       propertyPath: m_Mesh
       value: 

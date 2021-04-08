@@ -58,6 +58,7 @@ GameObject:
   - component: {fileID: -716995994856475573}
   - component: {fileID: -4050341127376261100}
   - component: {fileID: 7589196556273827476}
+  - component: {fileID: -4564096082985968059}
   m_Layer: 6
   m_Name: _FruitBase
   m_TagString: Untagged
@@ -107,6 +108,7 @@ MonoBehaviour:
   intervalBeforeDestroy: 3
   forceVariation: {x: 2, y: 2, z: 2}
   rotator: {fileID: -4050341127376261100}
+  dissolve: {fileID: -4564096082985968059}
 --- !u!114 &1588263287045509610
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,6 +174,26 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &-4564096082985968059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5510103359828662734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7de87bba775f4594a8744dda0253e2ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  renderer: {fileID: 6521152875664909109}
+  animationTime: 3
+  onDisappear:
+    m_PersistentCalls:
+      m_Calls: []
+  onAppear:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &5510103360087746648
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -256,5 +278,10 @@ PrefabInstance:
 --- !u!4 &5475647838132768691 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 505d7524e30658d42957f57ee1f5c9a1, type: 3}
+  m_PrefabInstance: {fileID: 5510103360087746648}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &6521152875664909109 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7635826562936255635, guid: 505d7524e30658d42957f57ee1f5c9a1, type: 3}
   m_PrefabInstance: {fileID: 5510103360087746648}
   m_PrefabAsset: {fileID: 0}

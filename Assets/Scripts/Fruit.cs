@@ -32,6 +32,8 @@ namespace BejeweledGazeus
         Vector3 forceVariation = new Vector3(2f, 2f, 2f);
         [SerializeField]
         Rotator rotator;
+        [SerializeField]
+        Dissolve dissolve;
 
         Vector3 _mouseStart;
         Vector3 _movingTo;
@@ -103,6 +105,7 @@ namespace BejeweledGazeus
             _movingByMouseOrTouch = false;
             _shouldMove = false;
             rigidBody.isKinematic = true;
+            dissolve.Reset();
             _rotator.ResetRotation();
             _pulsing.ResetPulsing();
         }
@@ -131,7 +134,11 @@ namespace BejeweledGazeus
         IEnumerator WaitAndRecycle()
         {
             yield return new WaitForSeconds(intervalBeforeDestroy);
-            GameController.instance.pool.Recycle(_originalType, this);
+
+            dissolve.Disappear(() =>
+            {
+                GameController.instance.pool.Recycle(_originalType, this);
+            });
         }
         //Check if fruit should be going to some place automatically
         void CheckAutoMovement()

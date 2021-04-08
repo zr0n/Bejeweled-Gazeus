@@ -53,7 +53,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5510103359828662734, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
       propertyPath: m_Name
-      value: FruitBase
+      value: Apple_Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 6521152875664909109, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: c9cdb48375d754940a886ed97fa70c73, type: 2}
+    - target: {fileID: 6521152875664909109, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2b10f7c1111e4494392bd368bb030949, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7358989b5b009bd488ba2db034d3cb8d, type: 3}
