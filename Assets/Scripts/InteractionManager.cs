@@ -9,11 +9,14 @@ namespace BejeweledGazeus
         public static FruitInteraction focusedFruit => _focusedFruit;
 
         static FruitInteraction _focusedFruit;
+        bool _interactionBlocked => !GameController.instance.gameStarted ||
+                                    GameController.instance.movingFruits.Count > 0;
+                                        
 
         // Update is called once per frame
         void Update()
         {
-            if (GameController.instance.interactionBlocked || !GameController.instance.gameStarted)
+            if (_interactionBlocked)
                 return;
 
             if (JustPressedMouseOrTouch())

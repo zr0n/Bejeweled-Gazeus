@@ -38,8 +38,6 @@ namespace BejeweledGazeus
         [HideInInspector]
         public Fruit fruitClicked;
         [HideInInspector]
-        public bool interactionBlocked;
-        [HideInInspector]
         public bool gameStarted;
 
         readonly Vector2[] _directions =
@@ -87,7 +85,6 @@ namespace BejeweledGazeus
         void Update()
         {
             ClearMovingFruits();
-            interactionBlocked = interactionBlocked || movingFruits.Count > 0;
             if (movingFruits.Count == 0 && shouldCheckBoardOnNextFrame)
             {
                 shouldCheckBoardOnNextFrame = false;
@@ -97,7 +94,6 @@ namespace BejeweledGazeus
 
         public void StartGame()
         {
-            interactionBlocked = false;
             gameStarted = true;
         }
 
@@ -241,7 +237,7 @@ namespace BejeweledGazeus
 
         public void GameOver()
         {
-            interactionBlocked = true;
+            gameStarted = false;
             FindObjectOfType<Fader>().imageFader.transform.parent.gameObject.SetActive(false);
             countdown.canvasCountdown.SetActive(true);
             StartCoroutine(countdown.StartCounting(RestartGame));
@@ -310,16 +306,10 @@ namespace BejeweledGazeus
             }
         }
 
-        
-
-        //Get Neighbours with the same fruit type (recursive)
-        Slot.Group GetConnectedNeighbours(Vector2 position, bool starter = true)
+        //Check if node is in middle of at least two other nodes of the same type and get neighbours connected
+        List<Slot> GetConnectedNeighboursMiddle(Vector2 position, Slot.Type type)
         {
-            Slot.Group neighbours = new Slot.Group();
-            Slot.Type type = GetType(position);
-
-            
-            //Check if node is in middle of at least two other nodes of the same type
+            List<Slot> matchingNeighbours = new List<Slot>();
             List<List<Slot>> checkMiddle = new List<List<Slot>>
             {
                 new List<Slot> { GetSlot(position + Vector2.up), GetSlot(position + Vector2.down) },
@@ -331,56 +321,80 @@ namespace BejeweledGazeus
                 List<Slot> slots = checkMiddle[i];
                 if (slots[0].type == slots[1].type && slots[0].type == type)
                 {
-                    neighbours.AddList(slots);
+                    foreach (var slot in slots)
+                        matchingNeighbours.Add(slot);
                 }
             }
 
-            //Check if there are at least 3 connected nodes, starting from position and going straight to _directions[i]
-            foreach (var direction in _directions)
-            {
-                int matches = 1;
-                var line = new List<Slot>() {};
-                
-                for(int i = 1; i < 3; i++)
-                {
-                    Vector2 neighbour = position + (direction * i);
-                    if(type != Slot.Type.Blank && GetType(neighbour) == type)
-                    {
-                        matches++;
-                        line.Add(GetSlot(neighbour));
-                    }
-                }
-                if(matches >= 3) //if matched 3 or more...
-                    neighbours.AddList(line); //...add the matched nodes to the list
-            }
+            return matchingNeighbours;
+        }
 
-            
-
-            //Check for crossing match
-            for(int i = 0; i < _directions.Length; i++)
+        //Check for crossing match
+        List<Slot> GetConnectedNeighboursCross(Vector2 position, Slot.Type type)
+        {
+            for (int i = 0; i < _directions.Length; i++)
             {
                 int neighbourCross = i + 1;
 
                 List<Slot> matchingNeighbours = new List<Slot>();
 
-                if(i == _directions.Length - 1)
+                if (i == _directions.Length - 1)
                 {
                     neighbourCross = 0;
                 }
 
-                List<Slot> neighboursDiagonal = new List<Slot>{ GetSlot(position + _directions[i]), GetSlot(position + _directions[neighbourCross]), GetSlot(position + (_directions[i] + _directions[neighbourCross])), };
-                foreach(var n in neighboursDiagonal)
+                List<Slot> neighboursDiagonal = new List<Slot> { GetSlot(position + _directions[i]), GetSlot(position + _directions[neighbourCross]), GetSlot(position + (_directions[i] + _directions[neighbourCross])), };
+                foreach (var n in neighboursDiagonal)
                 {
-                    if(n.type == type)
+                    if (n.type == type)
                     {
                         matchingNeighbours.Add(n);
                     }
                 }
 
                 if (matchingNeighbours.Count >= 3)
-                    neighbours.AddList(matchingNeighbours);
-
+                    return matchingNeighbours;
             }
+
+            return new List<Slot>();
+        }
+
+        //Check if there are at least 3 connected nodes, starting from position and going straight to _directions[i]
+        List<Slot> GetConnectedNeighboursStraight(Vector2 position, Slot.Type type)
+        {
+            foreach (var direction in _directions)
+            {
+                int matches = 1;
+                var line = new List<Slot>() { };
+
+                for (int i = 1; i < 3; i++)
+                {
+                    Vector2 neighbour = position + (direction * i);
+                    if (type != Slot.Type.Blank && GetType(neighbour) == type)
+                    {
+                        matches++;
+                        line.Add(GetSlot(neighbour));
+                    }
+                }
+                if (matches >= 3) //if matched 3 or more...
+                    return line; //...add the matched nodes to the list
+            }
+
+            return new List<Slot>();
+        }
+        
+
+        //Get Neighbours with the same fruit type (recursive)
+        Slot.Group GetConnectedNeighbours(Vector2 position, bool starter = true)
+        {
+            Slot.Group neighbours = new Slot.Group();
+            Slot.Type type = GetType(position);
+
+
+            //Get neighbours in all possible combinations
+            neighbours.AddList(GetConnectedNeighboursMiddle(position, type));
+            neighbours.AddList(GetConnectedNeighboursStraight(position, type));
+            neighbours.AddList(GetConnectedNeighboursCross(position, type));
 
             //Recursivity
             if (starter && neighbours.slots != null)
