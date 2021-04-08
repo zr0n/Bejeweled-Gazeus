@@ -19,13 +19,13 @@ namespace BejeweledGazeus
         [SerializeField]
         float intervalBeforeCheckGrid = .5f;
         [SerializeField]
-        GameObject gameOverUI;
-        [SerializeField]
         int scoreByFruit;
         [SerializeField]
         float timeToIncrementByFruit = .5f;
         [SerializeField]
         AudioManager audioManager;
+        [SerializeField]
+        Countdown countdown;
 
         [HideInInspector]
         public Fruit[] swap;
@@ -242,9 +242,9 @@ namespace BejeweledGazeus
         public void GameOver()
         {
             interactionBlocked = true;
-            gameOverUI.SetActive(true);
             FindObjectOfType<Fader>().imageFader.transform.parent.gameObject.SetActive(false);
-
+            countdown.canvasCountdown.SetActive(true);
+            StartCoroutine(countdown.StartCounting(RestartGame));
             timeManager.AnimateSliderOut();
         }
 
