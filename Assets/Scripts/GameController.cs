@@ -1,3 +1,26 @@
+/*
+MIT License
+
+Copyright (c) 2021 Luiz Fernando Alves dos Santos
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,20 +30,28 @@ namespace BejeweledGazeus
 {
     public class GameController : MonoBehaviour
     {
+        //The prefabs of the fruits. The index is important because it matches the type enum
         public GameObject[] fruitsTemplates;
+        //Grid Width
         public int width = 8;
+        //Grid Height
         public int height = 8;
+        //Each item of this array is an array of slots
         public Slot.Group[] grid;
         public TimeManager timeManager;
         public ObjectPool pool;
         
         [SerializeField]
+        //The parent the fruits spawned should have.
         GameObject gridParent;
         [SerializeField]
+        //Interval between finish fruit movement and check the grid for connected fruits
         float intervalBeforeCheckGrid = .5f;
         [SerializeField]
+        //How much score player earn by fruit cleared
         int scoreByFruit;
         [SerializeField]
+        //How much time player earn by fruit cleared
         float timeToIncrementByFruit = .5f;
         [SerializeField]
         AudioManager audioManager;
@@ -28,18 +59,25 @@ namespace BejeweledGazeus
         Countdown countdown;
 
         [HideInInspector]
+        //Used to memorize the last fruits swapped, so we can back them to original position if it's an invalid movement
         public Fruit[] swap;
         [HideInInspector]
+        //Used to calculate the position of the new fruits spawned, it's based on the position of fruits cleared
         public int[] spawnPositions;
         [HideInInspector]
+        //If true verify the board on next frame
         public bool shouldCheckBoardOnNextFrame;
         [HideInInspector]
+        //List of fruits being moved at that moment, used to block player input while something is going on
         public List<Fruit> movingFruits = new List<Fruit>();
         [HideInInspector]
+        //The fruit user clicked (and not dragged away)
         public Fruit fruitClicked;
         [HideInInspector]
+        //If true the game is going on, else it is stopped. Used to block player input before and after the game
         public bool gameStarted;
 
+        //Constant variable holding the offset of the directions. It's useful to use in loops, so we don't need to rewrite code
         readonly Vector2[] _directions =
         {
             Vector2.up,
@@ -122,6 +160,7 @@ namespace BejeweledGazeus
             swap = new Fruit[] { a, b };
         }
 
+        //Start pulsing procedural animation (scaling up and down) on every neighbour of fruit (except diagonal ones)
         public void StartPulsingNeighbours(Fruit fruit)
         {
             List<Fruit> neighbours = GetNeighbours(fruit);
@@ -131,6 +170,7 @@ namespace BejeweledGazeus
             }
         }
 
+        //Stop pulsing procedural animation (scaling up and down) on every neighbour of fruit (except diagonal ones)
         public void StopPulsingNeighbours(Fruit fruit)
         {
             List<Fruit> neighbours = GetNeighbours(fruit);
@@ -228,6 +268,7 @@ namespace BejeweledGazeus
             swap = new Fruit[0];
         }
 
+        //Check if a fruit is neighbour of another
         public bool IsNeighbour(Fruit fruitA, Fruit fruitB)
         {
             List<Fruit> neighbours = GetNeighbours(fruitA);
@@ -235,6 +276,7 @@ namespace BejeweledGazeus
             return !!neighbours.Find((neighbour) => neighbour == fruitB);
         }
 
+        //When game is over: Block Input, show countdown canvas, hide time progress bar
         public void GameOver()
         {
             gameStarted = false;
@@ -244,11 +286,13 @@ namespace BejeweledGazeus
             timeManager.AnimateSliderOut();
         }
 
+        //Reload this scene
         public void RestartGame()
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
+        //Get Fruits neighbours (except diagonal ones)
         List<Fruit> GetNeighbours(Fruit fruit)
         {
             List<Fruit> neighbours = new List<Fruit>();
@@ -278,13 +322,14 @@ namespace BejeweledGazeus
                 for(int j = 0; j < width; j++)
                 {
                     int randomIndex = Random.Range(0, fruitsTemplates.Length);
-                    //We need to add +1 because 0 = blank
+                    //We need to add +1 because 0 == blank
                     grid[i].slots[j].type = (Slot.Type) (randomIndex + 1);
                     grid[i].slots[j].position = new Vector2(i, j);
                 }
             }
         }
 
+        //Spawn fruit at the first frame of game
         void SpawnFruits()
         {
             for(int i = 0; i < width; i++)
@@ -294,9 +339,6 @@ namespace BejeweledGazeus
                     Slot.Type type = grid[i].slots[j].type;
                     if (type == Slot.Type.Blank) continue;
 
-                    //GameObject template = fruitsTemplates[(int) (type - 1)];
-
-                    //GameObject fruitObject = Instantiate(template, gridParent.transform);
                     Fruit fruit = pool.GetFromPoolOrSpawn(type);
                     fruit.transform.parent = gridParent.transform;
 
@@ -423,36 +465,38 @@ namespace BejeweledGazeus
             return GetSlot(position).type;
         }
 
-
+        //Wait for the interval and recheck the board 
         IEnumerator WaitAndCheckBoard()
         {
             yield return new WaitForSeconds(intervalBeforeCheckGrid);
             CheckConnectedNeighbours();
         }
 
+        //Remove invalid fruits from the movingFruits array
         void ClearMovingFruits()
         {
             while (IsThereAnInvalidMovingFruit())
             {
                 for (int i = 0; i < movingFruits.Count; i++)
                 {
-                    if (!movingFruits[i])
+                    if (!movingFruits[i] || movingFruits[i].isInPool)
                         movingFruits.RemoveAt(i);
                 }
 
             }
         }
 
+        //Return true if there is an invalid fruit among the movingFruits
         bool IsThereAnInvalidMovingFruit()
         {
             foreach (Fruit fruit in movingFruits)
-                if (!fruit)
+                if (!fruit || fruit.isInPool)
                     return true;
 
             return false;
         }
 
-        //Push fruits to the neighbour down slot if it's empty
+        //Push fruits to the neighbour down slot if it's empty (gravity effect)
         void PushFruitsDown()
         {
             for(int i = 0; i < width; i++)
@@ -498,7 +542,6 @@ namespace BejeweledGazeus
                             Vector2 spawnPosition = new Vector2(i, -1 - spawnPositions[i]);
 
 
-                            //GameObject newFruitObject = Instantiate(fruitsTemplates[randomIndex], gridParent.transform);
                             slot.type = (Slot.Type) (randomIndex + 1);
                             Fruit newFruit = pool.GetFromPoolOrSpawn(slot.type);
                             newFruit.transform.parent = gridParent.transform;
@@ -540,21 +583,7 @@ namespace BejeweledGazeus
             group.slots = filtered.ToArray();
         }
 
-        ////Return true if a slot is found. It searches by the slot position and not the object reference (which can be different)
-        //bool ContainsSlot(List<Slot> list, Slot slot)
-        //{
-        //    foreach(var s in list)
-        //    {
-        //        if((s.position - slot.position).magnitude < .1f) //are the same spot?
-        //        {
-        //            return true;
-        //        }
-        //    }
-
-        //    return false;
-        //}
-
-
+        //Get a new fruit type, ignoring the ones in the list parameter
         Slot.Type GetNewFruitType(List<Slot> delete)
         {
             List<Slot.Type> filtered = new List<Slot.Type>();
@@ -572,6 +601,7 @@ namespace BejeweledGazeus
             return filtered[Random.Range(0, filtered.Count)];
         }
 
+        //Set a slot type at given position
         void SetTypeAt(Vector2 position, Slot.Type fruitType)
         {
             grid[(int)position.x].slots[(int)position.y].type = fruitType;

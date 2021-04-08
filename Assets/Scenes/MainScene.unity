@@ -791,6 +791,10 @@ PrefabInstance:
       propertyPath: timeSlider
       value: 
       objectReference: {fileID: 3725964940487275604}
+    - target: {fileID: 1353753572987212412, guid: d6da510bede03cf41b0895a8a00d3fff, type: 3}
+      propertyPath: initialTime
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 2294190056701147724, guid: d6da510bede03cf41b0895a8a00d3fff, type: 3}
       propertyPath: m_Name
       value: TimerManager

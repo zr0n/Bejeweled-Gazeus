@@ -1,3 +1,26 @@
+/*
+MIT License
+
+Copyright (c) 2021 Luiz Fernando Alves dos Santos
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,30 +42,43 @@ namespace BejeweledGazeus
         [HideInInspector]
         public FruitInteraction fruitInteraction;
         [HideInInspector]
+        //Holds the new position this fruit wants to move
         public Vector2 newGridPosition;
         [HideInInspector]
+        //If true the fruit is falling, therefore it's invalid
         public bool falling;
+        [HideInInspector]
+        //If true this fruit is in the recycle zone and should not be considered for the game logic yet
+        public bool isInPool;
 
 
         [SerializeField]
         Rigidbody rigidBody;
         [SerializeField]
+        //How many time will we wait before starting the Dissolve Animation and recycle fruit?
         float intervalBeforeDestroy = 3f;
         [SerializeField]
+        //The maximum magnitude of how many force we can randomly apply to the fruit in its three axis
         Vector3 forceVariation = new Vector3(2f, 2f, 2f);
         [SerializeField]
         Rotator rotator;
         [SerializeField]
         Dissolve dissolve;
 
+        //The position of mouse when player starts touching the screen
         Vector3 _mouseStart;
+        //The position (world space) of where the fruit is moving to
         Vector3 _movingTo;
+        //If true the player is dragging the fruit to somewhere
         bool _movingByMouseOrTouch;
+        //If true we should update the position in direction of _movingTo
         bool _shouldMove;
+
         Rotator _rotator;
         Pulsing _pulsing;
         Slot.Type _originalType;
 
+        //If true the fruit has finished its movement in this frame
         bool _justFinishedMovement
         {
             get
@@ -67,6 +103,7 @@ namespace BejeweledGazeus
             CheckAutoMovement();
         }
 
+        //Set the slot its fruit belongs to
         public void SetSlot(Slot slot)
         {
             slot.fruit = this;
@@ -74,6 +111,7 @@ namespace BejeweledGazeus
             _originalType = slot.type;
         }
 
+        //Smooth move to position (linear interpolation)
         public void SmoothMoveTo(Vector2 position)
         {
             transform.localPosition = Vector3.Lerp(transform.localPosition, position, Time.deltaTime * moveSpeed);
@@ -94,11 +132,14 @@ namespace BejeweledGazeus
             _shouldMove = true;
         }
 
+        //Move to an empty slot, clonning the old slot type
         public void MoveToEmptyGridPosition(Vector2 position)
         {
             Slot newSlot = new Slot(position, slot.type, this);
             slot = newSlot;
         }
+
+        //Used for object pooling. Reset the fruit properties, so we can use it again as a new one
         public void ResetFruit()
         {
             falling = false;
@@ -109,6 +150,8 @@ namespace BejeweledGazeus
             _rotator.ResetRotation();
             _pulsing.ResetPulsing();
         }
+
+        //Enable physical engine gravity and apply a random force to the fruit
         public void StartFalling()
         {
             falling = true;
@@ -131,6 +174,7 @@ namespace BejeweledGazeus
             rigidBody.AddTorque(force, ForceMode.Impulse);
         }
 
+        //Wait for intervalBeforeDestroy, start the dissolve animation and when it's finished (the fruit isn't visible anymore) recycle the fruit
         IEnumerator WaitAndRecycle()
         {
             yield return new WaitForSeconds(intervalBeforeDestroy);
