@@ -287,7 +287,6 @@ GameObject:
   - component: {fileID: 7576598031501881251}
   - component: {fileID: 7576598031501881250}
   - component: {fileID: 7576598031501881253}
-  - component: {fileID: 5516608383918838766}
   m_Layer: 5
   m_Name: CanvasTime
   m_TagString: Untagged
@@ -376,19 +375,3 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &5516608383918838766
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7576598031501881252}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c55f3b6042bc3524dad7dd5e49ab8702, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  timeSlider: {fileID: 7576598030479953306}
-  initialTime: 20
-  progressSpeed: 3.5
-  animationDuration: 0.5
