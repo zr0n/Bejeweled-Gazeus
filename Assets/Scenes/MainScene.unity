@@ -647,6 +647,22 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 96058513}
+    - target: {fileID: 3725964940810225616, guid: ece5e2d75d5f6ba40b7e26f1921a8d4f, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3725964940810225616, guid: ece5e2d75d5f6ba40b7e26f1921a8d4f, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3725964940810225616, guid: ece5e2d75d5f6ba40b7e26f1921a8d4f, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3725964940810225616, guid: ece5e2d75d5f6ba40b7e26f1921a8d4f, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 3725964941090618853, guid: ece5e2d75d5f6ba40b7e26f1921a8d4f, type: 3}
       propertyPath: m_RootOrder
       value: 6
@@ -793,7 +809,7 @@ PrefabInstance:
       objectReference: {fileID: 3725964940487275604}
     - target: {fileID: 1353753572987212412, guid: d6da510bede03cf41b0895a8a00d3fff, type: 3}
       propertyPath: initialTime
-      value: 10
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2294190056701147724, guid: d6da510bede03cf41b0895a8a00d3fff, type: 3}
       propertyPath: m_Name
