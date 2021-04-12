@@ -78,7 +78,7 @@ namespace BejeweledGazeus
         public bool gameStarted;
 
         //Constant variable holding the offset of the directions. It's useful to use in loops, so we don't need to rewrite code
-        readonly Vector2[] _directions =
+        readonly Vector2[] _neighboursOffsets =
         {
             Vector2.up,
             Vector2.left,
@@ -297,7 +297,7 @@ namespace BejeweledGazeus
         {
             List<Fruit> neighbours = new List<Fruit>();
 
-            foreach(var direction in _directions)
+            foreach(var direction in _neighboursOffsets)
             {
                 Vector2 position = fruit.slot.position + direction;
                 Fruit neighbourFruit = GetSlot(position).fruit;
@@ -374,18 +374,18 @@ namespace BejeweledGazeus
         //Check for crossing match
         List<Slot> GetConnectedNeighboursCross(Vector2 position, Slot.Type type)
         {
-            for (int i = 0; i < _directions.Length; i++)
+            for (int i = 0; i < _neighboursOffsets.Length; i++)
             {
                 int neighbourCross = i + 1;
 
                 List<Slot> matchingNeighbours = new List<Slot>();
 
-                if (i == _directions.Length - 1)
+                if (i == _neighboursOffsets.Length - 1)
                 {
                     neighbourCross = 0;
                 }
 
-                List<Slot> neighboursDiagonal = new List<Slot> { GetSlot(position + _directions[i]), GetSlot(position + _directions[neighbourCross]), GetSlot(position + (_directions[i] + _directions[neighbourCross])), };
+                List<Slot> neighboursDiagonal = new List<Slot> { GetSlot(position + _neighboursOffsets[i]), GetSlot(position + _neighboursOffsets[neighbourCross]), GetSlot(position + (_neighboursOffsets[i] + _neighboursOffsets[neighbourCross])), };
                 foreach (var n in neighboursDiagonal)
                 {
                     if (n.type == type)
@@ -404,7 +404,7 @@ namespace BejeweledGazeus
         //Check if there are at least 3 connected nodes, starting from position and going straight to _directions[i]
         List<Slot> GetConnectedNeighboursStraight(Vector2 position, Slot.Type type)
         {
-            foreach (var direction in _directions)
+            foreach (var direction in _neighboursOffsets)
             {
                 int matches = 1;
                 var line = new List<Slot>() { };
